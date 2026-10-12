@@ -1,38 +1,38 @@
-# .motion 开放动画模板格式
+# .motion Open Animation Template Format
 
-技术规范说明 · Candidate 候选版 · 更新：2026-10-12
+[English](README.md) · [简体中文](SPEC.zh.md) · [Web specification](https://motiongit.com/spec)
 
-`.motion` 是一种基于 ZIP、JSON 与动画工程源文件的可复用模板格式。它把动画实现、可替换参数、素材说明、运行依赖、预设与许可封装在同一个包中，让人、AI 助手和兼容工具能够识别、检查、适配并渲染同一份模板。
+Technical specification · Candidate · Updated: 2026-10-12
 
-格式的重点是**内容可理解、依赖可追踪、运行可复现、扩展可协商**。它不限定制作模型，也不要求所有模板使用同一个动画引擎。在线生成服务属于可选集成；读取模板内容、校验参数和执行本地动画，不以调用 MotionGit API 为格式前提。
+`.motion` packages reusable animation templates using ZIP, JSON and animation project source files. It combines animation implementation, replaceable parameters, material guidance, dependency declarations, presets and licenses so people, AI assistants and compatible tools can inspect, adapt and render the same template.
 
-[版本历史](HISTORY.md) · [既有内容层详细规范](LEGACY.md) · [可选平台交付 profile](PERSONAL.md)
+The format emphasizes **understandable content, traceable dependencies, reproducible execution and explicit extensions**. It does not mandate an authoring model or animation engine. Online generation is optional: understanding the content, validating inputs and rendering local animation do not inherently require MotionGit API calls.
 
-## 1. 协议分层
+[Version history](HISTORY.en.md) · [Existing content contract](LEGACY.en.md) · [Optional platform delivery profile](PERSONAL.en.md)
 
-`.motion` 区分模板内容、运行适配和发行交付三个层次：
+## 1. Protocol layers
 
-| 层级 | 描述 | 版本位置 |
+| Layer | Responsibility | Version location |
 | --- | --- | --- |
-| 模板内容层 | 源码、参数、素材、预设、预览和许可 | 内容清单 `specVersion` |
-| 运行适配层 | 如何检查环境、读取输入、按帧渲染、输出文件 | `runtime.profile` 及适配器合同 |
-| 可选发行交付层 | 发行身份、来源签名、个人凭据或核心保护 | 外层 `packageProfile` 及独立合同 |
+| Template content | Source, parameters, assets, presets, previews and licenses | Content manifest `specVersion` |
+| Runtime adapter | Environment checks, input handling, frame rendering and output | `runtime.profile` and adapter contract |
+| Optional distribution | Release identity, signed provenance, personal credentials or core protection | Outer `packageProfile` and separate contracts |
 
-当前既有内容层版本为 `0.1.0-draft.1`。MotionGit 个人交付外层版本为 `1.0.0-rc.1`，profile 为 `personal-download-v1`。两个版本描述不同层级，不能混用。模板本身的 `template.version`、运行工具和组件库版本也分别管理；稳定协议 `1.0.0` 尚未冻结。
+The existing content version is `0.1.0-draft.1`. MotionGit personal delivery uses outer version `1.0.0-rc.1` and `personal-download-v1`. These describe different layers and MUST NOT be interchanged. Template `template.version`, helpers and component libraries have separate versions. Stable `1.0.0` is not frozen.
 
-“可选”是协议分层与其他实现的集成选择。MotionGit 官网的用户下载仍统一使用个人交付包，写入下载者自己的账户 Key；没有新增“公共模板”产品或另存 Key 的流程。
+Optional means a protocol integration choice for implementations. MotionGit website user downloads still use personal delivery with the downloader's own account Key; this does not introduce a “public template” product or separate Key download workflow.
 
-## 2. 开放性与互操作
+## 2. Openness and interoperability
 
-格式使用通用容器和文本合同，清单字段、文件路径、运行 profile 与版本语义可公开检查。开发者可以据此实现读取器、静态检查器、参数编辑器、动画引擎适配器或渲染工具。
+The format uses standard containers and text contracts. Manifest fields, paths, runtime profiles and version semantics are inspectable. Developers can implement readers, static validators, parameter editors, engine adapters or renderers.
 
-模板内容与平台服务分离；不需要解析私有数据库才能理解内容清单。接入带签名或凭据的发行 profile 时，必须另外遵守该 profile 的信任与授权合同。格式公开不代表所有模板源码、字体、音乐和素材都采用开放许可。
+Template content is separate from platform services; understanding a content manifest does not require a private database. Signed or credentialed distribution profiles have additional trust and authorization contracts. An open format does not imply open licensing for every template, font, soundtrack or asset.
 
-本文使用“必须”“不得”“应”分别表示必需条件、禁止条件和推荐实践。实现应明确声明支持哪些精确版本、profile 和扩展，不能通过版本前缀接受未知语义。未知可选元数据可以保留；影响执行、权限或兼容性的未知合同必须明确提示或停止相关操作。
+MUST and MUST NOT indicate requirements; SHOULD indicates recommendations. Implementations SHOULD declare precisely supported versions, profiles and extensions rather than accept unknown versions by prefix. Preserve unknown optional metadata; unsupported execution, permission or compatibility semantics require a clear warning or stopping the affected operation.
 
-## 3. 内容包结构
+## 3. Content package structure
 
-模板内容是一个具有根清单 `motion.json` 的 ZIP。以下为常见布局；具体必需项以版本合同和实际引用为准：
+Content is a ZIP with a root `motion.json`. This is a typical layout; required entries depend on the exact version and references:
 
 ```text
 motion.json
@@ -50,24 +50,24 @@ licenses/
 integrity.json
 ```
 
-| 文件或目录 | 职责 |
+| Entry | Responsibility |
 | --- | --- |
-| `motion.json` | 模板身份、运行入口、参数引用与输出声明 |
-| `README.md`、`SKILL.md` | 人与助手的使用说明；不自动注册或执行 |
-| `guide.json` | 用途、素材角色、时长策略与适配边界 |
-| `params.schema.json` | 可替换内容的 JSON Schema |
-| `motion.lock.json` | 实际依赖版本和已验证运行环境 |
-| `asset-manifest.json` | 素材、字体、来源、摘要及许可说明 |
-| `src/`、`assets/` | 源动画代码和可分发资源 |
-| `presets/`、`previews/` | 输入预设、样式分支和预览 |
-| `licenses/` | 模板及第三方资源的许可 |
-| `integrity.json` | 冻结文件闭包与 SHA-256 |
+| `motion.json` | Identity, runtime, parameter references and output |
+| `README.md`, `SKILL.md` | Human/assistant instructions; not automatically registered or executed |
+| `guide.json` | Purpose, material roles, duration and adaptation limits |
+| `params.schema.json` | JSON Schema for replaceable content |
+| `motion.lock.json` | Dependency versions and tested environments |
+| `asset-manifest.json` | Media/fonts, provenance, hashes and licensing |
+| `src/`, `assets/` | Animation source and distributable resources |
+| `presets/`, `previews/` | Inputs, style variants and previews |
+| `licenses/` | Template and third-party licenses |
+| `integrity.json` | Frozen membership and SHA-256 |
 
-相对路径必须能在包内准确解析。完整模板必须保留所选范围的动效、背景、转场、音效与代码依赖；不得将片段提炼声明为全片模板。用户私人素材不得默认为可再分发资源。
+Relative paths MUST resolve accurately inside the package. Complete extraction retains the selected animation, backgrounds, transitions, sounds and source dependencies. An excerpt MUST NOT be presented as a complete template. Private user material is not automatically redistributable.
 
-## 4. 内容根清单
+## 4. Content manifest
 
-以下为当前内容层清单示例。它描述内容合同，不是可直接发布的完整包；所有引用仍须有实际文件并通过检查。
+This example describes the current content layer, not a complete publishable archive. All referenced files must exist and pass validation.
 
 ```json
 {
@@ -104,15 +104,15 @@ integrity.json
 }
 ```
 
-核心识别字段为 `format`、`specVersion`、`template`、`runtime`、`output`。`format` 固定为 `motiongit-template`；模板 ID 必须稳定，版本遵守相应合同的 SemVer 规则。帧率以正整数 `num/den` 表示，避免浮点帧率歧义。
+Core fields are `format`, `specVersion`, `template`, `runtime`, `output`. The format identifier is `motiongit-template`. IDs remain stable; versions follow their declared contract's SemVer rules. Frame rate uses positive integer `num/den` to avoid floating-point ambiguity.
 
-参数、预设、素材、AI 入口和许可字段引用包内文件。`permissions` 是声明，宿主必须自行实施权限控制，不能由模板自行授权。制作工具与模型仅作为来源元数据和建议，内部制作或用户制作都不由格式设置模型品牌门槛。
+Parameter, preset, asset, assistant and license fields reference package files. `permissions` declares requirements; the host enforces them. Packages cannot authorize themselves. Authoring models/tools are provenance or recommendations, not format admission restrictions.
 
-[内容清单 Schema](schema/content-0.1.json) 负责字段结构；代码/素材引用闭包、实际运行和视觉质量需另外验证。
+The [content manifest Schema](schema/content-0.1.json) validates field structure. Reference completeness, actual execution and visual quality require separate checks.
 
-## 5. 参数、预设与样式分支
+## 5. Parameters, presets and variants
 
-参数合同应把可替换内容与动画实现分开，使用 JSON Schema 描述类型、范围、长度、枚举与必需项。预设是合法的输入值，不是绕过合同的隐藏代码。
+Parameter contracts SHOULD separate replaceable content from animation implementation. JSON Schema describes types, ranges, lengths, enumerations and required fields. Presets are valid inputs, not hidden executable overrides.
 
 ```json
 {
@@ -127,31 +127,31 @@ integrity.json
 }
 ```
 
-`variants` 可声明同一模板的多组样式预设，当前内容层最多 24 项；每项必须有稳定 ID、名称和可解析的预设引用。声明中的默认值与预设需要由宿主明确应用，不能假定 JSON Schema 校验器自动填入默认值。
+`variants` declares style presets, up to 24 in the current content contract. Each has a stable ID, name and resolvable preset reference. Hosts explicitly apply presets/defaults; JSON Schema validation does not inherently insert defaults.
 
-文本超长、列表增加、数据变化或素材缺失时，应分段、分页、替换场景或明确提示容量不足，不能只压缩文字、遮挡人物或裁掉信息。改变参数含义需要新模板版本及迁移说明。
+Long text, larger lists, changed data or missing media SHOULD trigger segmentation, pagination, scene changes or explicit capacity feedback, not unreadable scaling or cropped information. Parameter meaning changes need a new template version and migration notes.
 
-## 6. 素材与内容适配
+## 6. Materials and adaptation
 
-`guide.json` 说明模板适合什么、不适合什么，以及如何使用用户素材。统一角色包括：
+`guide.json` declares intended use, exclusions and material handling.
 
-| 类别 | 角色 |
+| Category | Roles |
 | --- | --- |
-| 视频 | `video.presenter`、`video.footage`、`video.screen` |
-| 图片 | `image.photo`、`image.product`、`image.logo`、`image.screenshot` |
-| 音频 | `audio.voiceover`、`audio.music` |
-| 文本 | `text.subtitles`、`text.script`、`text.facts` |
-| 自定义 | 当前 guide 合同使用 `x-` 前缀 |
+| Video | `video.presenter`, `video.footage`, `video.screen` |
+| Image | `image.photo`, `image.product`, `image.logo`, `image.screenshot` |
+| Audio | `audio.voiceover`, `audio.music` |
+| Text | `text.subtitles`, `text.script`, `text.facts` |
+| Custom | Current guide roles use the `x-` prefix |
 
-每项素材应说明用途、映射参数、是否必需及缺失时的处理。时长策略包括 `fixed`、`range`、`fit-voiceover`、`fit-content`，必须与输出声明一致，并记录实际容量。
+Materials SHOULD declare usage, mapped parameters, necessity and missing-input behavior. Duration policies are `fixed`, `range`, `fit-voiceover`, `fit-content`; guide and output declarations MUST agree and record actual capacity.
 
-支持横竖屏口播的模板应声明人物区域、字幕安全区、裁切/留边、画面层级及实际语音时间轴。支持某个输出比例不等于支持任意输入裁切。语言、长度、比例和场景的支持范围以实际验证为准；格式不要求每个模板都适用于所有比例或用途。
+Templates supporting portrait/landscape presenters SHOULD declare presenter regions, subtitle safe areas, cropping/letterboxing, layering and voiceover timing. An output ratio does not prove arbitrary input cropping works. Language, length, ratio and scenario support follow actual verification; every template need not support every use case or ratio.
 
-## 7. 运行 profile 与可复现渲染
+## 7. Runtime profiles and reproducibility
 
-`.motion` 通过运行 profile 描述输入如何进入引擎、时间如何驱动、帧如何输出，不把任意 JavaScript 或 Python 文件直接当成统一运行协议。
+Profiles define engine input, time control and frame output. Arbitrary JavaScript or Python does not itself constitute a common runtime contract.
 
-`html-canvas/1` 的参考入口采用以下调用合同：
+The `html-canvas/1` reference interface is:
 
 ```js
 window.renderFrame = (frame, inputs) => {
@@ -159,43 +159,43 @@ window.renderFrame = (frame, inputs) => {
 };
 ```
 
-宿主按整数帧计算时间 `t = frame × den / num`。同一输入应支持独立 seek，不依赖播放前已执行的帧；随机效果使用明确种子。字体、图片和必要资源就绪后才渲染，时间不能依赖实时时钟或帧间机器速度。
+The host computes `t = frame × den / num`. Identical input SHOULD allow independent frame seeking without reliance on previous frames; randomness uses an explicit seed. Required fonts/images/resources load before rendering. Timing MUST NOT depend on wall-clock playback or machine speed.
 
-其他 DOM、Canvas、原生工程或 Python/Node 适配器可以声明自己的 profile、引擎与版本，但必须提供可检查合同和兼容适配器。能识别包不等于能运行所有引擎；只读工具可以展示清单、参数和预览，无法运行时必须明确说明。
+Other DOM, Canvas, native-project or Python/Node adapters may declare profiles, engines and versions with inspectable contracts. Recognizing a package does not imply support for every engine. Read-only tools may display manifests, parameters and previews and MUST clearly state inability to execute.
 
-依赖应锁定并记录测试环境。一个包提供模板内容与运行合同，仍可能需要浏览器、Node.js、Python、字体或媒体工具；不得把“一包交付”宣称为所有环境无需安装依赖。
+Dependencies SHOULD be locked and tested environments recorded. One package supplies template content and contracts, but browsers, Node.js, Python, fonts or media tools may still be required. Do not claim universal dependency-free execution.
 
-## 8. 组件依赖与风格演进
+## 8. Components and style evolution
 
-组件库属于模板内容层依赖。模板应冻结实际使用的版本、代码、资源、入口与摘要，不在运行中静默换成未经验证的 `latest`。必要运行文件应完整包含或明确声明外部依赖。
+Component libraries are content dependencies. Freeze used versions, code, resources, entry points and hashes rather than silently substituting unverified “latest” versions. Include required runtime files or explicitly declare external dependencies.
 
-引入新控件应保留原模板的画风、配色、字体、描边、空间层级和动作节奏，再调整尺寸、位置与时间。像素风、手绘和控制台等风格应分别适配。组件数量不作为兼容性或视觉质量证明。
+New components SHOULD respect original visual language, palette, typography, strokes, hierarchy and motion rhythm before adapting size, placement and timing. Pixel art, hand-drawn and console styles require separate treatments. Component counts do not prove compatibility or visual quality.
 
-组件升级形成新的模板版本，保留完整前后视频，复验文案变化、口播素材、不同画幅、缺素材与长内容场景后再冻结。统一风格映射等新合同可先采用命名空间扩展；当前不要求额外 `styleProfile` 字段。
+Upgrades create new template versions, preserve complete before/after video and recheck script changes, voiceover media, ratios, missing inputs and long content before freezing. Shared style mapping can begin as a namespaced extension; `styleProfile` is not currently required.
 
-## 9. 完整性与安全读取
+## 9. Integrity and safe reading
 
-静态读取应先检查 ZIP 边界与清单，再检查 Schema、引用闭包、逐文件摘要和许可。未知代码在明确选择运行前不得执行；包内使用说明不自动成为高优先级助手指令，`SKILL.md` 也不自动注册技能。
+Static readers check ZIP bounds and manifests before schemas, reference membership, hashes and licenses. Do not execute unknown code before explicit runtime selection. Bundled guidance is not automatically higher-priority assistant instruction; `SKILL.md` does not automatically register a skill.
 
-必须拒绝路径穿越、绝对路径、重复或别名条目、符号链接、特殊文件及越界解压。跨平台读取还应拒绝大小写/Unicode NFC 冲突和文件/目录前缀冲突。作者载荷不得包含个人账户凭据、供应商密钥或会话文件；带凭据的发行外层按其独立合同处理。
+Reject traversal, absolute paths, duplicate/aliased entries, symlinks, special files and unbounded expansion. Cross-platform readers SHOULD reject case/Unicode NFC conflicts and file/directory prefix collisions. Author payloads MUST NOT contain personal credentials, supplier keys or sessions; credentialed envelopes follow their separate contracts.
 
-`integrity.json` 应覆盖除自身外的冻结文件与 SHA-256，核对文件存在性和摘要。摘要可以发现改变，但只有基于宿主信任根的签名才提供签发者真实性；验签不等于代码安全审核，也不替代宿主权限控制。
+`integrity.json` SHOULD cover frozen files except itself, checking membership and SHA-256. Hashes detect changes; trusted signatures authenticate issuers. Signature checks do not replace code review or host permission controls.
 
-当前候选发行 reader 的分层上限为：
+Current candidate distribution readers use layered limits:
 
-| 对象 | 上限 |
+| Object | Limit |
 | --- | --- |
-| 冻结发行 ZIP、保护密文或个人包内 `release.bin` | 384 MiB |
-| 普通内层单文件 | 150 MiB |
-| 内层条目数 / 解包合计 | 5000 / 600 MiB |
-| 大于 10 MiB 的内层文件 | 压缩比至多 200 |
-| 个人交付外层 ZIP | 384 MiB + 320 KiB |
+| Frozen release ZIP, protected ciphertext, personal `release.bin` | 384 MiB |
+| Ordinary inner file | 150 MiB |
+| Inner entries / expanded total | 5000 / 600 MiB |
+| Inner file larger than 10 MiB | Compression ratio at most 200 |
+| Personal delivery ZIP | 384 MiB + 320 KiB |
 
-`MiB = 1024²`。384 MiB 的特例不能放宽所有普通单文件限制。可选大语言载荷扩展可在同一包中分块，必须同时检查分块、整体摘要和有界解包；不要求所有模板采用该扩展。网站上传策略和历史工具限制可以更低，实现应声明自身边界。
+`MiB = 1024²`. Special 384 MiB entries do not increase every file limit. Optional large-locale extensions split content within the same package and check part/combined hashes and bounded extraction. They are not required for every template. Upload policy and historical tools may be stricter; implementations SHOULD declare their bounds.
 
-## 10. 可选发行与保护 profile
+## 10. Optional distribution and protection profiles
 
-MotionGit 的 `personal-download-v1` 在冻结内容外封装身份、来源回执和下载者本人 Key：
+MotionGit `personal-download-v1` wraps frozen content with identity, signed provenance and the downloader's own Key:
 
 ```text
 motion.json
@@ -206,40 +206,40 @@ personal/receipt.json
 personal/signature.json
 ```
 
-该外层精确使用 `1.0.0-rc.1`，只允许六个文件；内层发行字节保持原样，账户 Key 与上传者无关。回执使用 Ed25519 和 JCS，宿主先验签、验摘要、验内层，最后读取凭据。结构、大小与来源绑定见 [个人交付 profile](PERSONAL.md)。
+The outer version is exactly `1.0.0-rc.1`, with only six files. Inner bytes remain unchanged; credentials are independent of the uploader. Receipts use Ed25519 and JCS. Hosts verify signatures, hashes and inner content before reading credentials. See the [personal delivery profile](PERSONAL.en.md) for fields, bounds and binding.
 
-`protected-v1` 是独立可选核心保护：AES-256-GCM 加密核心，Ed25519 签名描述符，解密密钥不放入发行包。解锁与临时核心生命周期由兼容宿主负责。签名不等于加密，个人 Key 当前也不由该核心加密自动保密。保护能力不承诺运行后源码无法提取。
+Optional `protected-v1` encrypts cores with AES-256-GCM and signs descriptors with Ed25519; decryption keys are not bundled. Compatible hosts handle unlock and temporary core lifetime. Signing is not encryption; core protection does not automatically conceal the personal Key. Protection does not guarantee unextractable source after execution.
 
-第三方发行、签名、保护或运行方式应声明独立合同，不得冒用不符合的已定义 profile。平台 profile 可选不意味着可以删掉官网个人包必需凭据后仍声称符合该 profile。
+Third-party distribution, trust, protection and runtimes need explicitly named contracts and MUST NOT claim conformance to incompatible profiles. An optional platform integration does not allow stripping required website credentials while still claiming `personal-download-v1` conformance.
 
-## 11. 可选在线服务
+## 11. Optional online services
 
-模板可以声明在线能力需求，由宿主适配实际服务、账户授权与可用性。在线服务不是内容层必需项；无需在线生成的模板应能按其声明的本地依赖运行。服务地址、凭据、费用和失败处理由服务合同约束，不能由模板任意扩张权限。
+Templates may declare online capabilities. Hosts adapt availability, account authorization and service contracts. Online generation is not required by the content format; local templates run according to their declared local dependencies. Templates cannot arbitrarily expand service permissions, addresses or spending.
 
-MotionGit 提供可选的 `motiongit.creator/2` 集成。相关服务细节见 [开发者文档](https://motiongit.com/developers/creator-guide)，模型与音色随服务演进，不纳入格式的固定能力清单。
+MotionGit offers optional `motiongit.creator/2` integration. See [developer documentation](https://motiongit.com/developers/creator-guide). Models and voices evolve with services rather than become fixed format requirements.
 
-## 12. 更新发现与兼容升级
+## 12. Updates and compatible upgrades
 
-更新必须区分协议版本、模板版本、helper 版本和组件版本。可以发现新版，不代表可以自动覆盖当前工程或把未知合同当成兼容。
+Distinguish protocol, template, helper and component versions. Discovering a newer version does not permit automatic project replacement or assuming an unknown contract is compatible.
 
-发行方的更新合同应返回当前身份、目标固定版本、所需 profile、最低运行工具版本、内容摘要/大小、发布说明及可用下载地址。身份冲突、接口不可用或离线时必须明确无法确认；不能把查询失败显示为“已是最新”。
+Distribution update contracts SHOULD identify current/target releases, required profiles, minimum helper, content hash/size, release notes and available fixed-version URLs. Identity conflicts, service failures or offline state mean status cannot be confirmed, not “already latest”.
 
-MotionGit 个人交付支持公开版本查询合同，确认更高版本时提供官网固定版本入口。关闭下载时保留允许展示的版本信息，下载地址为 `null`。下载更新按当前登录者签发新个人包，保持其当前账户 Key 策略；不改变权限和预算。
+MotionGit personal delivery defines public update discovery and a fixed-version website entry for confirmed newer releases. Closed downloads retain permitted release metadata with a `null` download URL. Downloads issue a new personal package for the current website account without changing its Key permissions or budget.
 
-收到更新应重新验证身份、签名和摘要，另存新包，保留旧包与已审核结果。参数变更需要明确迁移合同和重新预览，不能把更新发现等同于自动参数迁移。稳定模板版本不自动升级到预发布版本。
+Verify new identity, signatures and hashes and save separately, preserving old packages and approved results. Parameter changes require an explicit migration contract and preview; discovery does not imply automatic migration. Stable template versions do not automatically move to prereleases.
 
-## 13. 许可与一致性验收
+## 13. Licensing and conformance
 
-模板、源码、字体、音乐、图片和示例分别声明许可与来源。格式公开、摘要匹配或签名通过，都不自动授予商业使用或再分发权。用户输入和在线服务素材的条件应单独记录。
+Templates, source, fonts, sound, images and examples declare their licenses and provenance separately. Openness, hash matching and valid signatures do not inherently grant commercial-use or redistribution rights. Record conditions for user inputs and online assets independently.
 
-一致性验收至少区分静态结构、引用完整性、实际运行、输出时序、内容适配和可选发行合同。有效/无效测试夹具属于协议开发资料，不是官网面向用户的模板下载，也不能携带真实用户 Key。
+Conformance separates static structure, reference completeness, runtime, timing, adaptation and optional distribution contracts. Valid/invalid test fixtures are protocol development material, not website user downloads, and MUST NOT contain real user Keys.
 
-应测试未知版本、缺失文件、篡改、超限压缩、依赖缺失、非法参数、长短文案、不同素材比例、字幕溢出、缺素材和升级兼容。各类失败保留已有结果并说明可行动原因；静态验证不得触发收费生成。
+Test unknown versions, missing/modified files, oversized compression, missing dependencies, invalid parameters, short/long scripts, aspect ratios, subtitle overflow, absent media and upgrade compatibility. Failures preserve existing output and give actionable reasons. Static verification MUST NOT invoke billable generation.
 
-## 14. 协议演进
+## 14. Evolution
 
-候选阶段继续完善实现与互操作测试，稳定冻结后保持已发布合同可追溯。新增运行、签名、加密、迁移或服务语义应明确版本化，不通过不透明扩展改变核心含义。
+Candidate work continues through implementation and interoperability testing. Stable releases retain traceable contracts. New runtime, signature, cryptographic, migration or service semantics need explicit versions rather than opaque extensions changing core meanings.
 
-既有内容清单允许扩展字段；新合同应采用命名空间并保留未知可选数据。个人交付外层更严格，仅接受已声明字段及命名空间 `extensions`。扩展不得改写既定凭据路径、权限或可信 origin。
+Existing content manifests permit extension fields; new contracts SHOULD be namespaced and preserve unknown optional data. The personal envelope is stricter and accepts only declared fields and namespaced `extensions`, which cannot override credential paths, permissions or trusted origins.
 
-此文描述 MotionGit 发起的格式规范与当前候选实现，不宣称获得其他组织的标准认证。协议说明、Schema、版本记录和兼容测试适合在 GitHub 单独维护；模板内容与平台服务按各自许可和合同演进。
+This describes a MotionGit-originated format and current candidate implementations, not an externally certified standard. Specifications, schemas, history and compatibility tests can be maintained independently on GitHub; templates and services evolve under their own licenses and contracts.

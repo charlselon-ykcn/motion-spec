@@ -1,6 +1,6 @@
 # MotionGit Template Specification 0.1.0-draft.1 (Draft)
 
-> Legacy content layer: this describes author payloads, not the current personal website delivery envelope. See the [.motion open format](SPEC.en.md) and [personal-download-v1](PERSONAL.en.md). Credentials are forbidden in author payloads; the personal envelope contains the downloader’s own Key. Authoring tools are provenance and recommendations.
+> Legacy content layer: this describes author payloads, not the current personal website delivery envelope. See the [.motion open format](README.md) and [personal-download-v1](PERSONAL.en.md). Credentials are forbidden in author payloads; the personal envelope contains the downloader’s own Key. Authoring tools are provenance and recommendations.
 
 > Status: Draft. These fields and directories are proposals that can be tried now, not a published industry standard. A freeze decision has not been confirmed. This English text and the Chinese text describe the same requirements; field names remain English. See [version history, compatibility and migration](HISTORY.en.md).
 

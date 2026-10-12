@@ -1,0 +1,134 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>.motion 开放动画模板格式</title><meta name="description" content="Open animation template format: package structure, runtime profiles, parameters, materials and interoperability."><style>:root{color-scheme:light;--ink:#1d2634;--muted:#657081;--line:#dde3eb;--accent:#08796a}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f7f9fc;color:var(--ink);font:16px/1.8 system-ui,-apple-system,"PingFang SC",sans-serif}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}header{border-bottom:1px solid var(--line);background:white;padding:16px max(24px,calc((100vw - 1200px)/2));display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{font-size:20px;font-weight:750;color:var(--ink)}nav{display:flex;gap:18px;flex-wrap:wrap;font-size:14px}.layout{max-width:1200px;margin:38px auto;display:grid;grid-template-columns:minmax(0,900px) 240px;gap:32px;padding:0 24px}article{padding:32px 40px;background:white;border:1px solid var(--line);border-radius:12px;min-width:0}h1{font-size:32px;line-height:1.3;margin:0 0 20px}h2{font-size:23px;line-height:1.5;margin:40px 0 16px;border-top:1px solid var(--line);padding-top:28px;scroll-margin-top:20px}h3{font-size:19px}p{margin:16px 0}strong{font-weight:700}code{font:14px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4f8;padding:2px 5px;border-radius:4px;overflow-wrap:anywhere}pre{padding:20px;background:#101b2b;color:#dfebf7;border-radius:8px;overflow:auto}pre code{background:none;padding:0;color:inherit;overflow-wrap:normal}table{border-collapse:collapse;width:100%;display:block;overflow:auto;font-size:14px;margin:20px 0}th,td{border:1px solid var(--line);padding:11px 14px;vertical-align:top;text-align:left;min-width:135px}th{background:#f1f5f9}td code,th code{font-size:13px}blockquote{margin:20px 0;border-left:3px solid var(--accent);padding:1px 18px;background:#f2faf7}aside{position:sticky;top:24px;align-self:start;font-size:13px;color:var(--muted)}aside a{display:block;padding:6px 0;color:var(--muted)}.label{font:12px ui-monospace,monospace;letter-spacing:.04em;color:var(--muted);margin-bottom:18px}footer{max-width:1200px;margin:20px auto;padding:0 24px 36px;color:var(--muted);font-size:13px}@media(max-width:950px){.layout{grid-template-columns:1fr}aside{display:none}}@media(max-width:600px){header{align-items:flex-start;flex-direction:column}.layout{margin:18px auto;padding:0 12px}article{padding:24px 18px}h1{font-size:27px}pre{padding:14px}}@media print{header,aside,footer{display:none}.layout{display:block;margin:0;padding:0}article{border:0;padding:0}body{background:white}pre{white-space:pre-wrap;background:#eee;color:black}h2{break-after:avoid}}</style></head><body><header><a class="brand" href="zh.html">.motion <span style="font-weight:400;color:#657081">/ specification</span></a><nav><a href="index.html">English</a><a href="SPEC.zh.md">Markdown</a><a href="history.html">版本记录</a></nav></header><main class="layout"><article><div class="label">MOTIONGIT · OPEN FORMAT · CANDIDATE</div><h1 id="top">.motion 开放动画模板格式</h1>
+<p>技术规范说明 · Candidate 候选版 · 更新：2026-10-12</p>
+<p><code>.motion</code> 是一种基于 ZIP、JSON 与动画工程源文件的可复用模板格式。它把动画实现、可替换参数、素材说明、运行依赖、预设与许可封装在同一个包中，让人、AI 助手和兼容工具能够识别、检查、适配并渲染同一份模板。</p>
+<p>格式的重点是<strong>内容可理解、依赖可追踪、运行可复现、扩展可协商</strong>。它不限定制作模型，也不要求所有模板使用同一个动画引擎。在线生成服务属于可选集成；读取模板内容、校验参数和执行本地动画，不以调用 MotionGit API 为格式前提。</p>
+<p><a href="history.html">版本历史</a> · <a href="legacy.html">既有内容层详细规范</a> · <a href="personal.html">可选平台交付 profile</a></p>
+<h2 id="s-1">1. 协议分层</h2>
+<p><code>.motion</code> 区分模板内容、运行适配和发行交付三个层次：</p>
+<table tabindex="0"><thead><tr><th>层级</th><th>描述</th><th>版本位置</th></tr></thead><tbody><tr><td>模板内容层</td><td>源码、参数、素材、预设、预览和许可</td><td>内容清单 <code>specVersion</code></td></tr><tr><td>运行适配层</td><td>如何检查环境、读取输入、按帧渲染、输出文件</td><td><code>runtime.profile</code> 及适配器合同</td></tr><tr><td>可选发行交付层</td><td>发行身份、来源签名、个人凭据或核心保护</td><td>外层 <code>packageProfile</code> 及独立合同</td></tr></tbody></table>
+<p>当前既有内容层版本为 <code>0.1.0-draft.1</code>。MotionGit 个人交付外层版本为 <code>1.0.0-rc.1</code>，profile 为 <code>personal-download-v1</code>。两个版本描述不同层级，不能混用。模板本身的 <code>template.version</code>、运行工具和组件库版本也分别管理；稳定协议 <code>1.0.0</code> 尚未冻结。</p>
+<p>“可选”是协议分层与其他实现的集成选择。MotionGit 官网的用户下载仍统一使用个人交付包，写入下载者自己的账户 Key；没有新增“公共模板”产品或另存 Key 的流程。</p>
+<h2 id="s-2">2. 开放性与互操作</h2>
+<p>格式使用通用容器和文本合同，清单字段、文件路径、运行 profile 与版本语义可公开检查。开发者可以据此实现读取器、静态检查器、参数编辑器、动画引擎适配器或渲染工具。</p>
+<p>模板内容与平台服务分离；不需要解析私有数据库才能理解内容清单。接入带签名或凭据的发行 profile 时，必须另外遵守该 profile 的信任与授权合同。格式公开不代表所有模板源码、字体、音乐和素材都采用开放许可。</p>
+<p>本文使用“必须”“不得”“应”分别表示必需条件、禁止条件和推荐实践。实现应明确声明支持哪些精确版本、profile 和扩展，不能通过版本前缀接受未知语义。未知可选元数据可以保留；影响执行、权限或兼容性的未知合同必须明确提示或停止相关操作。</p>
+<h2 id="s-3">3. 内容包结构</h2>
+<p>模板内容是一个具有根清单 <code>motion.json</code> 的 ZIP。以下为常见布局；具体必需项以版本合同和实际引用为准：</p>
+<pre tabindex="0"><code>motion.json
+README.md
+SKILL.md
+guide.json
+params.schema.json
+motion.lock.json
+asset-manifest.json
+src/
+assets/
+presets/demo.json
+previews/
+licenses/
+integrity.json</code></pre>
+<table tabindex="0"><thead><tr><th>文件或目录</th><th>职责</th></tr></thead><tbody><tr><td><code>motion.json</code></td><td>模板身份、运行入口、参数引用与输出声明</td></tr><tr><td><code>README.md</code>、<code>SKILL.md</code></td><td>人与助手的使用说明；不自动注册或执行</td></tr><tr><td><code>guide.json</code></td><td>用途、素材角色、时长策略与适配边界</td></tr><tr><td><code>params.schema.json</code></td><td>可替换内容的 JSON Schema</td></tr><tr><td><code>motion.lock.json</code></td><td>实际依赖版本和已验证运行环境</td></tr><tr><td><code>asset-manifest.json</code></td><td>素材、字体、来源、摘要及许可说明</td></tr><tr><td><code>src/</code>、<code>assets/</code></td><td>源动画代码和可分发资源</td></tr><tr><td><code>presets/</code>、<code>previews/</code></td><td>输入预设、样式分支和预览</td></tr><tr><td><code>licenses/</code></td><td>模板及第三方资源的许可</td></tr><tr><td><code>integrity.json</code></td><td>冻结文件闭包与 SHA-256</td></tr></tbody></table>
+<p>相对路径必须能在包内准确解析。完整模板必须保留所选范围的动效、背景、转场、音效与代码依赖；不得将片段提炼声明为全片模板。用户私人素材不得默认为可再分发资源。</p>
+<h2 id="s-4">4. 内容根清单</h2>
+<p>以下为当前内容层清单示例。它描述内容合同，不是可直接发布的完整包；所有引用仍须有实际文件并通过检查。</p>
+<pre tabindex="0"><code>{
+  "$schema": "https://motiongit.com/schema/motion/0.1.json",
+  "format": "motiongit-template",
+  "specVersion": "0.1.0-draft.1",
+  "template": {
+    "id": "example-title",
+    "version": "1.0.0",
+    "name": "Example Title",
+    "status": "candidate"
+  },
+  "runtime": {
+    "profile": "html-canvas/1",
+    "entry": "src/index.html",
+    "dependencyLock": "motion.lock.json"
+  },
+  "parameters": {
+    "schema": "params.schema.json",
+    "defaultPreset": "presets/demo.json"
+  },
+  "assets": { "manifest": "asset-manifest.json" },
+  "output": {
+    "width": 1920,
+    "height": 1080,
+    "fps": { "num": 30, "den": 1 },
+    "durationPolicy": "fixed",
+    "durationSeconds": 6
+  },
+  "license": { "file": "licenses/TEMPLATE-LICENSE.txt" },
+  "permissions": { "network": false },
+  "ai": { "entry": "SKILL.md", "guide": "guide.json" },
+  "integrity": "integrity.json"
+}</code></pre>
+<p>核心识别字段为 <code>format</code>、<code>specVersion</code>、<code>template</code>、<code>runtime</code>、<code>output</code>。<code>format</code> 固定为 <code>motiongit-template</code>；模板 ID 必须稳定，版本遵守相应合同的 SemVer 规则。帧率以正整数 <code>num/den</code> 表示，避免浮点帧率歧义。</p>
+<p>参数、预设、素材、AI 入口和许可字段引用包内文件。<code>permissions</code> 是声明，宿主必须自行实施权限控制，不能由模板自行授权。制作工具与模型仅作为来源元数据和建议，内部制作或用户制作都不由格式设置模型品牌门槛。</p>
+<p><a href="schema/content-0.1.json">内容清单 Schema</a> 负责字段结构；代码/素材引用闭包、实际运行和视觉质量需另外验证。</p>
+<h2 id="s-5">5. 参数、预设与样式分支</h2>
+<p>参数合同应把可替换内容与动画实现分开，使用 JSON Schema 描述类型、范围、长度、枚举与必需项。预设是合法的输入值，不是绕过合同的隐藏代码。</p>
+<pre tabindex="0"><code>{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title"],
+  "properties": {
+    "title": { "type": "string", "minLength": 1, "maxLength": 40 },
+    "accent": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "default": "#79c0ff" }
+  }
+}</code></pre>
+<p><code>variants</code> 可声明同一模板的多组样式预设，当前内容层最多 24 项；每项必须有稳定 ID、名称和可解析的预设引用。声明中的默认值与预设需要由宿主明确应用，不能假定 JSON Schema 校验器自动填入默认值。</p>
+<p>文本超长、列表增加、数据变化或素材缺失时，应分段、分页、替换场景或明确提示容量不足，不能只压缩文字、遮挡人物或裁掉信息。改变参数含义需要新模板版本及迁移说明。</p>
+<h2 id="s-6">6. 素材与内容适配</h2>
+<p><code>guide.json</code> 说明模板适合什么、不适合什么，以及如何使用用户素材。统一角色包括：</p>
+<table tabindex="0"><thead><tr><th>类别</th><th>角色</th></tr></thead><tbody><tr><td>视频</td><td><code>video.presenter</code>、<code>video.footage</code>、<code>video.screen</code></td></tr><tr><td>图片</td><td><code>image.photo</code>、<code>image.product</code>、<code>image.logo</code>、<code>image.screenshot</code></td></tr><tr><td>音频</td><td><code>audio.voiceover</code>、<code>audio.music</code></td></tr><tr><td>文本</td><td><code>text.subtitles</code>、<code>text.script</code>、<code>text.facts</code></td></tr><tr><td>自定义</td><td>当前 guide 合同使用 <code>x-</code> 前缀</td></tr></tbody></table>
+<p>每项素材应说明用途、映射参数、是否必需及缺失时的处理。时长策略包括 <code>fixed</code>、<code>range</code>、<code>fit-voiceover</code>、<code>fit-content</code>，必须与输出声明一致，并记录实际容量。</p>
+<p>支持横竖屏口播的模板应声明人物区域、字幕安全区、裁切/留边、画面层级及实际语音时间轴。支持某个输出比例不等于支持任意输入裁切。语言、长度、比例和场景的支持范围以实际验证为准；格式不要求每个模板都适用于所有比例或用途。</p>
+<h2 id="s-7">7. 运行 profile 与可复现渲染</h2>
+<p><code>.motion</code> 通过运行 profile 描述输入如何进入引擎、时间如何驱动、帧如何输出，不把任意 JavaScript 或 Python 文件直接当成统一运行协议。</p>
+<p><code>html-canvas/1</code> 的参考入口采用以下调用合同：</p>
+<pre tabindex="0"><code>window.renderFrame = (frame, inputs) =&gt; {
+  // Render the requested integer frame using the validated inputs.
+};</code></pre>
+<p>宿主按整数帧计算时间 <code>t = frame × den / num</code>。同一输入应支持独立 seek，不依赖播放前已执行的帧；随机效果使用明确种子。字体、图片和必要资源就绪后才渲染，时间不能依赖实时时钟或帧间机器速度。</p>
+<p>其他 DOM、Canvas、原生工程或 Python/Node 适配器可以声明自己的 profile、引擎与版本，但必须提供可检查合同和兼容适配器。能识别包不等于能运行所有引擎；只读工具可以展示清单、参数和预览，无法运行时必须明确说明。</p>
+<p>依赖应锁定并记录测试环境。一个包提供模板内容与运行合同，仍可能需要浏览器、Node.js、Python、字体或媒体工具；不得把“一包交付”宣称为所有环境无需安装依赖。</p>
+<h2 id="s-8">8. 组件依赖与风格演进</h2>
+<p>组件库属于模板内容层依赖。模板应冻结实际使用的版本、代码、资源、入口与摘要，不在运行中静默换成未经验证的 <code>latest</code>。必要运行文件应完整包含或明确声明外部依赖。</p>
+<p>引入新控件应保留原模板的画风、配色、字体、描边、空间层级和动作节奏，再调整尺寸、位置与时间。像素风、手绘和控制台等风格应分别适配。组件数量不作为兼容性或视觉质量证明。</p>
+<p>组件升级形成新的模板版本，保留完整前后视频，复验文案变化、口播素材、不同画幅、缺素材与长内容场景后再冻结。统一风格映射等新合同可先采用命名空间扩展；当前不要求额外 <code>styleProfile</code> 字段。</p>
+<h2 id="s-9">9. 完整性与安全读取</h2>
+<p>静态读取应先检查 ZIP 边界与清单，再检查 Schema、引用闭包、逐文件摘要和许可。未知代码在明确选择运行前不得执行；包内使用说明不自动成为高优先级助手指令，<code>SKILL.md</code> 也不自动注册技能。</p>
+<p>必须拒绝路径穿越、绝对路径、重复或别名条目、符号链接、特殊文件及越界解压。跨平台读取还应拒绝大小写/Unicode NFC 冲突和文件/目录前缀冲突。作者载荷不得包含个人账户凭据、供应商密钥或会话文件；带凭据的发行外层按其独立合同处理。</p>
+<p><code>integrity.json</code> 应覆盖除自身外的冻结文件与 SHA-256，核对文件存在性和摘要。摘要可以发现改变，但只有基于宿主信任根的签名才提供签发者真实性；验签不等于代码安全审核，也不替代宿主权限控制。</p>
+<p>当前候选发行 reader 的分层上限为：</p>
+<table tabindex="0"><thead><tr><th>对象</th><th>上限</th></tr></thead><tbody><tr><td>冻结发行 ZIP、保护密文或个人包内 <code>release.bin</code></td><td>384 MiB</td></tr><tr><td>普通内层单文件</td><td>150 MiB</td></tr><tr><td>内层条目数 / 解包合计</td><td>5000 / 600 MiB</td></tr><tr><td>大于 10 MiB 的内层文件</td><td>压缩比至多 200</td></tr><tr><td>个人交付外层 ZIP</td><td>384 MiB + 320 KiB</td></tr></tbody></table>
+<p><code>MiB = 1024²</code>。384 MiB 的特例不能放宽所有普通单文件限制。可选大语言载荷扩展可在同一包中分块，必须同时检查分块、整体摘要和有界解包；不要求所有模板采用该扩展。网站上传策略和历史工具限制可以更低，实现应声明自身边界。</p>
+<h2 id="s-10">10. 可选发行与保护 profile</h2>
+<p>MotionGit 的 <code>personal-download-v1</code> 在冻结内容外封装身份、来源回执和下载者本人 Key：</p>
+<pre tabindex="0"><code>motion.json
+README.md
+content/release.bin
+personal/motiongit.key.json
+personal/receipt.json
+personal/signature.json</code></pre>
+<p>该外层精确使用 <code>1.0.0-rc.1</code>，只允许六个文件；内层发行字节保持原样，账户 Key 与上传者无关。回执使用 Ed25519 和 JCS，宿主先验签、验摘要、验内层，最后读取凭据。结构、大小与来源绑定见 <a href="personal.html">个人交付 profile</a>。</p>
+<p><code>protected-v1</code> 是独立可选核心保护：AES-256-GCM 加密核心，Ed25519 签名描述符，解密密钥不放入发行包。解锁与临时核心生命周期由兼容宿主负责。签名不等于加密，个人 Key 当前也不由该核心加密自动保密。保护能力不承诺运行后源码无法提取。</p>
+<p>第三方发行、签名、保护或运行方式应声明独立合同，不得冒用不符合的已定义 profile。平台 profile 可选不意味着可以删掉官网个人包必需凭据后仍声称符合该 profile。</p>
+<h2 id="s-11">11. 可选在线服务</h2>
+<p>模板可以声明在线能力需求，由宿主适配实际服务、账户授权与可用性。在线服务不是内容层必需项；无需在线生成的模板应能按其声明的本地依赖运行。服务地址、凭据、费用和失败处理由服务合同约束，不能由模板任意扩张权限。</p>
+<p>MotionGit 提供可选的 <code>motiongit.creator/2</code> 集成。相关服务细节见 <a href="https://motiongit.com/developers/creator-guide" rel="noopener" target="_blank">开发者文档</a>，模型与音色随服务演进，不纳入格式的固定能力清单。</p>
+<h2 id="s-12">12. 更新发现与兼容升级</h2>
+<p>更新必须区分协议版本、模板版本、helper 版本和组件版本。可以发现新版，不代表可以自动覆盖当前工程或把未知合同当成兼容。</p>
+<p>发行方的更新合同应返回当前身份、目标固定版本、所需 profile、最低运行工具版本、内容摘要/大小、发布说明及可用下载地址。身份冲突、接口不可用或离线时必须明确无法确认；不能把查询失败显示为“已是最新”。</p>
+<p>MotionGit 个人交付支持公开版本查询合同，确认更高版本时提供官网固定版本入口。关闭下载时保留允许展示的版本信息，下载地址为 <code>null</code>。下载更新按当前登录者签发新个人包，保持其当前账户 Key 策略；不改变权限和预算。</p>
+<p>收到更新应重新验证身份、签名和摘要，另存新包，保留旧包与已审核结果。参数变更需要明确迁移合同和重新预览，不能把更新发现等同于自动参数迁移。稳定模板版本不自动升级到预发布版本。</p>
+<h2 id="s-13">13. 许可与一致性验收</h2>
+<p>模板、源码、字体、音乐、图片和示例分别声明许可与来源。格式公开、摘要匹配或签名通过，都不自动授予商业使用或再分发权。用户输入和在线服务素材的条件应单独记录。</p>
+<p>一致性验收至少区分静态结构、引用完整性、实际运行、输出时序、内容适配和可选发行合同。有效/无效测试夹具属于协议开发资料，不是官网面向用户的模板下载，也不能携带真实用户 Key。</p>
+<p>应测试未知版本、缺失文件、篡改、超限压缩、依赖缺失、非法参数、长短文案、不同素材比例、字幕溢出、缺素材和升级兼容。各类失败保留已有结果并说明可行动原因；静态验证不得触发收费生成。</p>
+<h2 id="s-14">14. 协议演进</h2>
+<p>候选阶段继续完善实现与互操作测试，稳定冻结后保持已发布合同可追溯。新增运行、签名、加密、迁移或服务语义应明确版本化，不通过不透明扩展改变核心含义。</p>
+<p>既有内容清单允许扩展字段；新合同应采用命名空间并保留未知可选数据。个人交付外层更严格，仅接受已声明字段及命名空间 <code>extensions</code>。扩展不得改写既定凭据路径、权限或可信 origin。</p>
+<p>此文描述 MotionGit 发起的格式规范与当前候选实现，不宣称获得其他组织的标准认证。协议说明、Schema、版本记录和兼容测试适合在 GitHub 单独维护；模板内容与平台服务按各自许可和合同演进。</p></article><aside><div class="label">本页目录</div><a href="#s-1">1. 协议分层</a><a href="#s-2">2. 开放性与互操作</a><a href="#s-3">3. 内容包结构</a><a href="#s-4">4. 内容根清单</a><a href="#s-5">5. 参数、预设与样式分支</a><a href="#s-6">6. 素材与内容适配</a><a href="#s-7">7. 运行 profile 与可复现渲染</a><a href="#s-8">8. 组件依赖与风格演进</a><a href="#s-9">9. 完整性与安全读取</a><a href="#s-10">10. 可选发行与保护 profile</a><a href="#s-11">11. 可选在线服务</a><a href="#s-12">12. 更新发现与兼容升级</a><a href="#s-13">13. 许可与一致性验收</a><a href="#s-14">14. 协议演进</a></aside></main><footer>静态文档，无登录、无外部脚本。平台服务为可选集成。</footer></body></html>

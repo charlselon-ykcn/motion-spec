@@ -2,7 +2,7 @@
 
 Exchange version: `1.0.0-rc.1` · `personal-download-v1` · Candidate · Updated: 2026-10-12
 
-This optional platform appendix supplements the [.motion open format](SPEC.en.md). It specifies MotionGit personal downloads and does not require third-party content tools to integrate MotionGit online services.
+This optional platform appendix supplements the [.motion open format](README.md). It specifies MotionGit personal downloads and does not require third-party content tools to integrate MotionGit online services.
 
 `.motion` delivers a reusable animation template in one package: template content, runtime instructions, parameter and material contracts, release provenance, and the downloader's own MotionGit account Key. A compatible assistant checks the package, adapts the user's script or media, previews the result, and renders the video.
 

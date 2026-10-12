@@ -28,4 +28,4 @@ Larger bounded readers use helper baseline `1.0.0-rc.2` while the exchange versi
 
 Preserve published bytes and hashes. Version protocols, templates, helpers and components separately. Stop affected operations for unknown execution semantics. Future parameter migration needs an explicit contract and preview acceptance; discovering an update does not establish automatic migration support.
 
-[Open format](SPEC.en.md) · [Detailed content contract](LEGACY.en.md) · [Personal delivery profile](PERSONAL.en.md)
+[Open format](README.md) · [Detailed content contract](LEGACY.en.md) · [Personal delivery profile](PERSONAL.en.md)

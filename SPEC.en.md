@@ -1,5 +1,7 @@
 # .motion Open Animation Template Format
 
+[English](README.md) · [简体中文](SPEC.zh.md) · [Web specification](https://motiongit.com/spec)
+
 Technical specification · Candidate · Updated: 2026-10-12
 
 `.motion` packages reusable animation templates using ZIP, JSON and animation project source files. It combines animation implementation, replaceable parameters, material guidance, dependency declarations, presets and licenses so people, AI assistants and compatible tools can inspect, adapt and render the same template.
