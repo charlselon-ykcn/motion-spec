@@ -1,0 +1,418 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://motiongit.com/schema/motion/0.1.json",
+  "title": "MotionGit 模板根清单（motion.json）",
+  "description": "MotionGit 模板（.motion 文件）的根清单。一个 .motion 文件就是一条可以反复制作的视频：源码负责动作与节奏，参数负责可替换的内容。",
+  "type": "object",
+  "required": [
+    "format",
+    "specVersion",
+    "template",
+    "runtime",
+    "output"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri"
+    },
+    "format": {
+      "const": "motiongit-template",
+      "description": "固定标识，用于识别 MotionGit 模板包"
+    },
+    "specVersion": {
+      "const": "0.1.0-draft.1"
+    },
+    "template": {
+      "type": "object",
+      "required": [
+        "id",
+        "version",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$"
+        },
+        "version": {
+          "type": "string",
+          "maxLength": 100,
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "candidate",
+            "stable"
+          ]
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "required": [
+        "profile",
+        "entry"
+      ],
+      "properties": {
+        "profile": {
+          "type": "string",
+          "description": "运行配置规范，如 html-canvas/1 或 adu-authored-unit/1"
+        },
+        "engine": {
+          "type": "string"
+        },
+        "engineVersion": {
+          "type": "string"
+        },
+        "sourceCommit": {
+          "type": "string"
+        },
+        "entry": {
+          "type": "string",
+          "description": "包内相对路径"
+        },
+        "dependencyLock": {
+          "type": "string"
+        }
+      }
+    },
+    "distribution": {
+      "description": "省略时为open。protected-v1由平台封包；只有显式公开合同可见，运行工具必须支持split-root-v1。",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "mode"
+          ],
+          "properties": {
+            "mode": {
+              "const": "open"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "mode",
+            "profile",
+            "public",
+            "fullEntry",
+            "minHelperVersion",
+            "runtimeContract"
+          ],
+          "properties": {
+            "mode": {
+              "const": "protected"
+            },
+            "profile": {
+              "const": "protected-v1"
+            },
+            "public": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 100,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 243
+              },
+              "description": "安全相对路径，或presets/previews/licenses/recipes目录后的/**；不能公开入口或源码。检查器验证实际文件集合。"
+            },
+            "fullEntry": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 240,
+              "description": "core内实际入口；必须存在且不能匹配public清单。"
+            },
+            "minHelperVersion": {
+              "type": "string",
+              "maxLength": 100,
+              "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$"
+            },
+            "runtimeContract": {
+              "const": "split-root-v1"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "string"
+        },
+        "mapping": {
+          "type": "string"
+        },
+        "defaultPreset": {
+          "type": "string"
+        }
+      }
+    },
+    "variants": {
+      "type": "array",
+      "maxItems": 24,
+      "description": "样式分支：同一模板的多组预设（配色、版式、风格）。每个分支指向一个 presets/*.json，一次下载全部包含。",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "preset"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,39}$"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "preset": {
+            "type": "string",
+            "description": "包内预设文件，如 presets/midnight.json"
+          },
+          "swatch": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "description": "代表色，用于界面展示"
+          },
+          "preview": {
+            "type": "string",
+            "description": "该分支的预览视频或图片（包内路径，可选）"
+          }
+        }
+      }
+    },
+    "assets": {
+      "type": "object",
+      "properties": {
+        "manifest": {
+          "type": "string"
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "required": [
+        "width",
+        "height",
+        "fps"
+      ],
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 16,
+          "maximum": 8192
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 16,
+          "maximum": 8192
+        },
+        "fps": {
+          "type": "object",
+          "required": [
+            "num",
+            "den"
+          ],
+          "properties": {
+            "num": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "den": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "durationPolicy": {
+          "enum": [
+            "fixed",
+            "range",
+            "fit-voiceover",
+            "fit-content"
+          ],
+          "description": "与 guide.json 的 duration.policy 一致。fixed 以外的模板时长由用户内容决定"
+        },
+        "durationSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "默认样例（presets/demo.json）的时长"
+        }
+      }
+    },
+    "preview": {
+      "type": "object",
+      "properties": {
+        "video": {
+          "type": "string",
+          "pattern": "\\.(mp4|webm)$"
+        },
+        "cover": {
+          "type": "string",
+          "pattern": "\\.(png|jpe?g|webp)$"
+        },
+        "card": {
+          "type": "string",
+          "pattern": "\\.(mp4|webm)$"
+        },
+        "preset": {
+          "type": "string"
+        },
+        "language": {
+          "enum": [
+            "en",
+            "zh",
+            "ja",
+            "ko",
+            "es",
+            "fr",
+            "de",
+            "pt",
+            "ru"
+          ],
+          "description": "默认 demo 的语言，可选；不填写表示通用视频。"
+        },
+        "locales": {
+          "type": "object",
+          "maxProperties": 9,
+          "propertyNames": {
+            "enum": [
+              "en",
+              "zh",
+              "ja",
+              "ko",
+              "es",
+              "fr",
+              "de",
+              "pt",
+              "ru"
+            ]
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "video"
+            ],
+            "properties": {
+              "video": {
+                "type": "string",
+                "pattern": "\\.(mp4|webm)$"
+              },
+              "cover": {
+                "type": "string",
+                "pattern": "\\.(png|jpe?g|webp)$"
+              },
+              "card": {
+                "type": "string",
+                "pattern": "\\.(mp4|webm)$"
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "可选语言 demo。随网站语言选择，无对应语言时回退到 preview.video。"
+        }
+      },
+      "dependentRequired": {
+        "language": [
+          "video"
+        ],
+        "locales": [
+          "video"
+        ]
+      }
+    },
+    "license": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "spdx": {
+          "type": "string"
+        }
+      }
+    },
+    "permissions": {
+      "type": "object",
+      "description": "仅为声明，必须由宿主强制执行，不能作为包自行授权的依据",
+      "properties": {
+        "network": {
+          "type": "boolean",
+          "default": false
+        },
+        "read": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "write": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ai": {
+      "type": "object",
+      "properties": {
+        "summary": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "给 AI 助手的简短说明：这是什么、能改什么、需要什么、下一步读哪个文件"
+        },
+        "entry": {
+          "type": "string",
+          "description": "给 AI 的入口文件，如 SKILL.md（只是可读文件，不代表宿主会自动注册技能）"
+        },
+        "guide": {
+          "type": "string",
+          "description": "guide.json：适合做什么视频、用户素材怎么用、文案从哪来、时长怎么调整、怎么和用户对话"
+        },
+        "authoring": {
+          "type": "object",
+          "description": "制作来源声明（作者声明，平台以声明 + 审核为准，不构成技术证明）",
+          "properties": {
+            "tool": {
+              "type": "string",
+              "examples": [
+                "claude"
+              ]
+            },
+            "model": {
+              "type": "string"
+            },
+            "client": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "integrity": {
+      "type": "string",
+      "description": "integrity.json：除自身外所有包内文件的 SHA256"
+    }
+  },
+  "additionalProperties": true
+}

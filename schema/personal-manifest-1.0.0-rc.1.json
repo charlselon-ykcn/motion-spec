@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://motiongit.com/schema/motion/personal/1.0.0-rc.1.json",
+  "title": "MotionGit personal-download-v1 outer manifest",
+  "description": "Manifest structure only. Full verification additionally requires exact ZIP membership, bounds, a trusted Ed25519 receipt, hashes, account binding and inner release validation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "specVersion", "packageProfile", "content", "personal", "runtime", "services"],
+  "properties": {
+    "format": { "const": "motiongit-template" },
+    "specVersion": { "const": "1.0.0-rc.1" },
+    "packageProfile": { "const": "personal-download-v1" },
+    "content": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "sha256", "protection"],
+      "properties": {
+        "path": { "const": "content/release.bin" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "protection": { "enum": ["open", "protected"] }
+      }
+    },
+    "personal": {
+      "type": "object", "additionalProperties": false,
+      "required": ["credentials", "receipt", "signature"],
+      "properties": {
+        "credentials": { "const": "personal/motiongit.key.json" },
+        "receipt": { "const": "personal/receipt.json" },
+        "signature": { "const": "personal/signature.json" }
+      }
+    },
+    "runtime": {
+      "type": "object", "additionalProperties": false,
+      "required": ["profile", "operation"],
+      "properties": {
+        "profile": { "const": "motiongit-host/1" },
+        "operation": { "const": "motion.run" }
+      }
+    },
+    "services": {
+      "type": "object", "additionalProperties": false,
+      "required": ["creator"],
+      "properties": {
+        "creator": {
+          "type": "object", "additionalProperties": false,
+          "required": ["contract", "execution", "credentials", "origin"],
+          "properties": {
+            "contract": { "const": "motiongit.creator/2" },
+            "execution": { "const": "host" },
+            "credentials": { "const": "personal-envelope" },
+            "origin": { "const": "https://motiongit.com/api/v1" }
+          }
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*$" }
+    }
+  }
+}
